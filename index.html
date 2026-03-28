@@ -1,0 +1,370 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Crave — Food Delivery</title>
+
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <script src="script.js"></script>
+
+<!-- ══════════════════════════════
+     HEADER
+══════════════════════════════ -->
+<header id="mainHeader">
+  <div class="logo">🔥 Cra<span>ve</span></div>
+  <nav>
+    <a href="#" onclick="scrollToRestaurants()">Restaurants</a>
+    <a href="#" onclick="scrollToCuisines()">Cuisines</a>
+    <a href="#" onclick="openTracking()">Track Order</a>
+  </nav>
+  <div class="header-actions">
+    <button class="cart-btn" id="cartBtn">
+      🛒 Cart
+      <span class="cart-count" id="cartCount">0</span>
+    </button>
+    <button class="btn-ghost">Sign in</button>
+    <button class="btn-primary" onclick="scrollToRestaurants()">Order Now</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════
+     CART SIDEBAR
+══════════════════════════════ -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-sidebar" id="cartSidebar">
+  <div class="cart-sidebar-header">
+    <h3>🛒 Your Cart</h3>
+    <button class="cart-close-btn" id="cartCloseBtn">✕</button>
+  </div>
+  <div class="cart-items-list" id="cartItemsList">
+    <div class="cart-empty" id="cartEmpty">
+      <div style="font-size:56px;margin-bottom:12px">🛒</div>
+      <p>Your cart is empty</p>
+      <small>Add items from the menu below</small>
+    </div>
+  </div>
+  <div class="cart-footer" id="cartFooter" style="display:none">
+    <div class="cart-coupon-row">
+      <input type="text" id="couponInput" placeholder="🏷 Enter coupon code" class="coupon-input">
+      <button class="coupon-btn" onclick="applyCoupon()">Apply</button>
+    </div>
+    <div class="cart-summary">
+      <div class="summary-row"><span>Subtotal</span><span id="summarySubtotal">₹0</span></div>
+      <div class="summary-row"><span>Delivery fee</span><span id="summaryDelivery">₹30</span></div>
+      <div class="summary-row" id="discountRow" style="display:none"><span style="color:#2D4A3E">🎉 Discount</span><span id="summaryDiscount" style="color:#2D4A3E">-₹0</span></div>
+      <div class="summary-row summary-total"><span>Total</span><span id="summaryTotal">₹0</span></div>
+    </div>
+    <button class="checkout-btn" onclick="openCheckout()">Proceed to Checkout →</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     CHECKOUT MODAL
+══════════════════════════════ -->
+<div class="modal-overlay" id="checkoutOverlay"></div>
+<div class="checkout-modal" id="checkoutModal">
+  <div class="modal-header">
+    <h3>Checkout</h3>
+    <button class="cart-close-btn" onclick="closeCheckout()">✕</button>
+  </div>
+  <div class="checkout-body">
+    <div class="checkout-left">
+      <div class="checkout-card">
+        <h4>📍 Delivery Address</h4>
+        <input type="text" class="co-input" id="deliveryAddress" placeholder="House no., Street, Area" value="A-42, Jangpura Extension">
+        <input type="text" class="co-input" id="deliveryCity" placeholder="City, Pincode" value="New Delhi - 110014">
+        <input type="text" class="co-input" id="deliveryNote" placeholder="Delivery instructions (optional)">
+      </div>
+      <div class="checkout-card">
+        <h4>👤 Contact Details</h4>
+        <input type="text" class="co-input" id="contactName" placeholder="Your full name">
+        <input type="tel" class="co-input" id="contactPhone" placeholder="+91 phone number">
+      </div>
+      <div class="checkout-card">
+        <h4>💳 Payment Method</h4>
+        <div class="payment-options" id="paymentOptions">
+          <label class="payment-opt selected">
+            <input type="radio" name="pay" value="upi" checked onchange="highlightPayment(this)"> 📱 UPI / GPay
+          </label>
+          <label class="payment-opt">
+            <input type="radio" name="pay" value="card" onchange="highlightPayment(this)"> 💳 Credit / Debit Card
+          </label>
+          <label class="payment-opt">
+            <input type="radio" name="pay" value="cod" onchange="highlightPayment(this)"> 💵 Cash on Delivery
+          </label>
+          <label class="payment-opt">
+            <input type="radio" name="pay" value="wallet" onchange="highlightPayment(this)"> 👛 Paytm / PhonePe
+          </label>
+        </div>
+        <div id="cardFields" style="display:none;margin-top:14px">
+          <input type="text" class="co-input" placeholder="Card Number (16 digits)" maxlength="19" oninput="formatCardNum(this)">
+          <div style="display:flex;gap:10px">
+            <input type="text" class="co-input" placeholder="MM/YY" maxlength="5">
+            <input type="text" class="co-input" placeholder="CVV" maxlength="3">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="checkout-right">
+      <div class="checkout-card">
+        <h4>🧾 Order Summary</h4>
+        <div id="checkoutItemsList"></div>
+        <div class="co-divider"></div>
+        <div class="co-row"><span>Subtotal</span><span id="coSubtotal"></span></div>
+        <div class="co-row"><span>Delivery</span><span id="coDelivery"></span></div>
+        <div class="co-row" id="coDiscRow" style="display:none"><span style="color:#2D4A3E">Discount</span><span id="coDiscount" style="color:#2D4A3E"></span></div>
+        <div class="co-row co-total"><span>Total</span><span id="coTotal"></span></div>
+        <div class="eta-badge">⏱ Estimated delivery: 25–35 min</div>
+        <button class="place-order-btn" onclick="placeOrder()">🎉 Place Order</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════
+     ORDER SUCCESS MODAL
+══════════════════════════════ -->
+<div class="modal-overlay" id="successOverlay"></div>
+<div class="success-modal" id="successModal">
+  <div class="success-icon">🎉</div>
+  <h2>Order Placed!</h2>
+  <p>Your food is being prepared right now.</p>
+  <div class="success-order-id">Order ID: <b id="successOrderId"></b></div>
+  <div class="success-eta">⏱ Estimated delivery: <b>25–35 min</b></div>
+  <button class="btn-ember-full" onclick="closeSuccess(); openTracking()">Track My Order 🛵</button>
+  <button class="btn-ghost-sm" onclick="closeSuccess()">Back to Menu</button>
+</div>
+
+<!-- ══════════════════════════════
+     LIVE TRACKING MODAL
+══════════════════════════════ -->
+<div class="modal-overlay" id="trackOverlay"></div>
+<div class="tracking-modal" id="trackingModal">
+  <div class="modal-header">
+    <h3>🛵 Live Tracking</h3>
+    <button class="cart-close-btn" onclick="closeTracking()">✕</button>
+  </div>
+  <div class="tracking-body">
+    <div class="track-top-row">
+      <div>
+        <div class="track-order-label">Order <span id="trackOrderId">—</span></div>
+        <div id="trackRestaurantName" style="font-size:13px;color:var(--sand);margin-top:3px"></div>
+      </div>
+      <div class="live-pill">● LIVE</div>
+    </div>
+
+    <div class="track-steps">
+      <div class="ts-row"><div class="ts-dot done">✓</div><div class="ts-line"></div><div class="ts-info"><b>Order Confirmed</b><span id="ts1">Accepted by restaurant</span></div></div>
+      <div class="ts-row"><div class="ts-dot done">✓</div><div class="ts-line"></div><div class="ts-info"><b>Preparing your food</b><span id="ts2">Kitchen is busy cooking…</span></div></div>
+      <div class="ts-row"><div class="ts-dot active-ts pulse-dot">🛵</div><div class="ts-line"></div><div class="ts-info"><b>Out for Delivery</b><span id="ts3">Rider is <b id="riderDist">2.3</b> km away</span></div></div>
+      <div class="ts-row"><div class="ts-dot pending-ts">📦</div><div class="ts-line last"></div><div class="ts-info"><b>Delivered</b><span id="ts4">Arriving in <b id="etaMin">12</b> min</span></div></div>
+    </div>
+
+    <div class="rider-card">
+      <div class="rider-avatar">🧑‍🦱</div>
+      <div class="rider-info">
+        <b>Rahul Kumar</b>
+        <small>Your delivery partner · ⭐ 4.9</small>
+      </div>
+      <div class="rider-btns">
+        <button class="rider-btn" onclick="showToast('📞 Calling Rahul...')">📞 Call</button>
+        <button class="rider-btn" onclick="showToast('💬 Chat coming soon!')">💬 Chat</button>
+      </div>
+    </div>
+
+    <div id="noActiveOrder" style="display:none;text-align:center;padding:24px;color:var(--sand)">
+      <div style="font-size:48px">🛵</div>
+      <p style="margin-top:8px">No active order yet.</p>
+      <button class="btn-ember-full" style="margin-top:16px" onclick="closeTracking(); scrollToRestaurants()">Order Now</button>
+    </div>
+
+    <div id="trackItemsBox">
+      <div class="track-items-header">Your items</div>
+      <div id="trackItemsList"></div>
+      <div class="track-total-row">Total paid: <b id="trackTotal"></b></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════
+     HERO SECTION
+══════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg-circle"></div>
+  <div class="hero-left">
+    <div class="hero-label">🚀 30 min delivery guarantee</div>
+    <h1>Food that<em>moves you.</em></h1>
+    <p>Discover the best restaurants near you, order with a tap, and enjoy restaurant-quality meals at your doorstep — hot, fresh, and on time.</p>
+    <div class="hero-cta">
+      <button class="btn-large" onclick="scrollToRestaurants()">Find Food Near You <span class="arrow">→</span></button>
+      <button class="hero-secondary" onclick="scrollToCuisines()">Browse Cuisines</button>
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-num">2.4<span>K</span></div><div class="stat-label">Restaurants</div></div>
+      <div class="stat-item"><div class="stat-num">98<span>%</span></div><div class="stat-label">On-Time Rate</div></div>
+      <div class="stat-item"><div class="stat-num">4.9<span>★</span></div><div class="stat-label">Avg Rating</div></div>
+    </div>
+  </div>
+
+  <div class="hero-visual">
+    <div class="phone-mockup">
+      <div class="phone-inner">
+        <div class="phone-status"><span>9:41</span><span>●●●</span></div>
+        <div style="padding:4px 16px 8px;font-family:'Playfair Display',serif;font-size:17px;font-weight:700;">Good evening, Aryan 👋</div>
+        <div style="padding:0 16px 8px;font-size:11px;color:#C4A882;">📍 Connaught Place, Delhi</div>
+        <div class="phone-search">🔍 Search restaurants or dishes…</div>
+        <div class="phone-categories">
+          <div class="cat-chip active">🍕 Pizza</div>
+          <div class="cat-chip">🍜 Noodles</div>
+          <div class="cat-chip">🍔 Burgers</div>
+          <div class="cat-chip">🥗 Salads</div>
+        </div>
+        <div class="phone-cards">
+          <div class="phone-card">
+            <div class="card-img card-img-1">🍕<div class="card-badge">⭐ 4.8</div></div>
+            <div class="card-body-mini"><div class="card-title">Pizzafire Co.</div><div class="card-meta"><span>Pizza · Italian</span><span>22 min · ₹30</span></div></div>
+          </div>
+          <div class="phone-card">
+            <div class="card-img card-img-2">🍜<div class="card-badge">🔥 Popular</div></div>
+            <div class="card-body-mini"><div class="card-title">Noodle Republic</div><div class="card-meta"><span>Chinese · Thai</span><span>18 min · Free</span></div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="float-tag float-tag-1"><span class="dot dot-green"></span>Order placed!</div>
+    <div class="float-tag float-tag-2"><span class="dot dot-ember"></span>Arriving in 12 min</div>
+  </div>
+</section>
+
+<!-- SEARCH STRIP -->
+<div class="search-strip">
+  <h3>Find your craving</h3>
+  <div class="search-input-group">
+    <input class="search-field" id="locationInput" type="text" placeholder="📍  Delivery address…" value="Connaught Place, New Delhi">
+    <input class="search-field" id="cuisineInput" type="text" placeholder="🍽  Cuisine or restaurant…">
+    <button class="search-btn" onclick="handleSearch()">Search →</button>
+  </div>
+</div>
+
+<!-- CUISINE FILTER BAR -->
+<div class="filter-bar" id="cuisineBar">
+  <button class="filter-chip active" onclick="filterCuisine('all', this)">🍽 All</button>
+  <button class="filter-chip" onclick="filterCuisine('pizza', this)">🍕 Pizza</button>
+  <button class="filter-chip" onclick="filterCuisine('sushi', this)">🍣 Sushi</button>
+  <button class="filter-chip" onclick="filterCuisine('burger', this)">🍔 Burgers</button>
+  <button class="filter-chip" onclick="filterCuisine('healthy', this)">🥗 Healthy</button>
+  <button class="filter-chip" onclick="filterCuisine('chinese', this)">🍜 Chinese</button>
+  <button class="filter-chip" onclick="filterCuisine('indian', this)">🍛 Indian</button>
+  <button class="filter-chip" onclick="filterCuisine('dessert', this)">🍰 Desserts</button>
+</div>
+
+<!-- RESTAURANTS SECTION -->
+<section id="restaurantsSection">
+  <div class="section-header">
+    <div>
+      <div class="section-label">Top Picks</div>
+      <div class="section-title">Restaurants near you</div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <label style="font-size:13px;color:var(--bark);font-weight:500">Sort:</label>
+      <select class="sort-select" id="sortSelect" onchange="sortAndRender()">
+        <option value="rating">Top Rated</option>
+        <option value="delivery">Fastest</option>
+        <option value="price-low">Price: Low</option>
+        <option value="price-high">Price: High</option>
+      </select>
+    </div>
+  </div>
+  <div class="restaurant-grid" id="restaurantGrid"></div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="section-header" style="margin-bottom:64px;">
+    <div><div class="section-label">The Process</div><div class="section-title" style="color:white">How Crave works</div></div>
+  </div>
+  <div class="steps-grid">
+    <div class="step"><div class="step-icon">📍</div><div class="step-num">01</div><div class="step-title">Set location</div><div class="step-desc">Enter your delivery address and discover all available restaurants instantly.</div></div>
+    <div class="step"><div class="step-icon">🍽</div><div class="step-num">02</div><div class="step-title">Browse & choose</div><div class="step-desc">Explore menus, filter by cuisine, read reviews and pick what you're craving.</div></div>
+    <div class="step"><div class="step-icon">💳</div><div class="step-num">03</div><div class="step-title">Pay securely</div><div class="step-desc">Cards, UPI, wallets — all protected by bank-grade encryption.</div></div>
+    <div class="step"><div class="step-icon">🛵</div><div class="step-num">04</div><div class="step-title">Track live</div><div class="step-desc">Follow your order in real-time from kitchen to doorstep.</div></div>
+  </div>
+</section>
+
+<!-- FEATURED DISHES -->
+<section id="featuredSection">
+  <div class="section-header">
+    <div><div class="section-label">Fan Favourites</div><div class="section-title">Most ordered today</div></div>
+    <button class="view-all" onclick="scrollToRestaurants()">See all dishes →</button>
+  </div>
+  <div class="dishes-grid" id="dishesGrid"></div>
+</section>
+
+<!-- LIVE TRACKING STRIP -->
+<div class="tracking-section">
+  <div>
+    <div class="section-label">Real-Time Tracking</div>
+    <div class="section-title" style="color:white">Know exactly where your food is</div>
+    <p>Live GPS tracking keeps you in the loop from the moment your order is placed to the second it arrives at your door.</p>
+    <button class="btn-white" onclick="openTracking()">Track My Order →</button>
+  </div>
+  <div class="track-widget">
+    <div class="track-title-sm">Your Order #CR-4821 <span class="track-live">● LIVE</span></div>
+    <div class="track-steps-mini">
+      <div class="tsm-row"><div class="tsm-dot tsm-done">✓</div><div class="tsm-info"><b>Order Confirmed</b><small>7:14 PM</small></div></div>
+      <div class="tsm-row"><div class="tsm-dot tsm-done">✓</div><div class="tsm-info"><b>Preparation Started</b><small>7:18 PM</small></div></div>
+      <div class="tsm-row"><div class="tsm-dot tsm-active">🛵</div><div class="tsm-info"><b>Out for Delivery</b><small id="liveRiderInfo">Rahul is 2.3 km away</small></div></div>
+      <div class="tsm-row"><div class="tsm-dot tsm-pending">📦</div><div class="tsm-info"><b>Delivered</b><small id="liveEta">Est. ~12 min</small></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- REVIEWS -->
+<section class="testimonials-section">
+  <div class="section-header">
+    <div><div class="section-label">Real People, Real Reviews</div><div class="section-title">What our customers say</div></div>
+    <button class="view-all">Read all →</button>
+  </div>
+  <div class="reviews-grid">
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Ordered from Pizzafire during a thunderstorm and the delivery arrived hot and on time. The live tracking made the whole experience stress-free."</div><div class="reviewer"><div class="reviewer-avatar av-1">👩</div><div><div class="reviewer-name">Priya Sharma</div><div class="reviewer-loc">Lajpat Nagar, Delhi</div></div></div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"The app is so clean and fast. Found a new sushi place I never knew existed nearby, and the first order was 25% off. Can't ask for more."</div><div class="reviewer"><div class="reviewer-avatar av-2">👨</div><div><div class="reviewer-name">Arjun Mehta</div><div class="reviewer-loc">Vasant Kunj, Delhi</div></div></div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Finally a food app that actually understands dietary preferences. I filtered vegan options and got exactly what I needed — no guesswork."</div><div class="reviewer"><div class="reviewer-avatar av-3">👩</div><div><div class="reviewer-name">Meera Nair</div><div class="reviewer-loc">Saket, Delhi</div></div></div></div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-top">
+    <div class="footer-brand">
+      <div class="logo" style="font-size:28px;">🔥 Cra<span>ve</span></div>
+      <p>Delivering happiness to your doorstep since 2024. Fast, fresh, and always on time — that's the Crave promise.</p>
+      <div class="footer-apps">
+        <button class="app-btn" onclick="showToast('🍎 App Store coming soon!')">🍎 App Store</button>
+        <button class="app-btn" onclick="showToast('▶ Play Store coming soon!')">▶ Google Play</button>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Company</h4><a href="#">About Us</a><a href="#">Careers</a><a href="#">Press</a><a href="#">Blog</a></div>
+    <div class="footer-col"><h4>For Partners</h4><a href="#">List your restaurant</a><a href="#">Become a rider</a><a href="#">Partner portal</a><a href="#">Advertise</a></div>
+    <div class="footer-col"><h4>Support</h4><a href="#">Help Center</a><a href="#">Contact Us</a><a href="#">Privacy Policy</a><a href="#">Terms</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2024 Crave Technologies Pvt. Ltd. All rights reserved.</p>
+    <div class="footer-social">
+      <a class="social-icon" href="#">𝕏</a>
+      <a class="social-icon" href="#">in</a>
+      <a class="social-icon" href="#">📸</a>
+      <a class="social-icon" href="#">▶</a>
+    </div>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
